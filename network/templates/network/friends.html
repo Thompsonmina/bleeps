@@ -1,0 +1,39 @@
+
+{% extends "network/layout.html" %}
+
+{% block body %}
+			<!-- if user is not user -->
+	<div class=" text-center"> <h3 class="pt-1 mb-0">jaya</h3></div>    
+  	<ul class="nav nav-tabs tabs-alt justify-content-center mt-0 pt-0">
+    	<li class="nav-item pt-0">
+      		<a class="nav-link pt-4 pb-4 active pt-0" href="#">Followers</a>
+    	</li>
+    	<li class="nav-item">
+      		<a class="nav-link py-4" href="#">Following</a>
+    	</li>
+  	</ul>    
+
+	<div class="list-group px-4 py-3">
+<!-- 		add conditional statement for empty profile padding -->
+		<div class="media px-3 pb-1  border">
+          	<img src="https://api.adorable.io/avatars/32/jay@adorable.png" alt class="rounded-circle ml-2 mt-2">	
+			<div class="media-body ml-2 mt-2">
+          		<h5 style="display: inline;"class="font-weight-bold mb-4">John Doe</h5> <button type="button" class="btn btn-sm btn-success float-right">Follow</button>	
+	           	<div class="text-muted mt-2">
+	              this is a line of text
+	            </div>
+         	</div>
+		</div>
+
+		<div class="media px-3 pb-1 border border-top-0">
+		    <img src="https://api.adorable.io/avatars/32/jay@adorable.png" alt class="rounded-circle ml-2 mt-2">
+			<div class="media-body ml-2 mt-2">
+          		<h5 style="display: inline;"class="font-weight-bold mb-4">John Doe</h5> <button type="button" class="btn btn-sm btn-success float-right">Follow</button>	
+	           	<div class="text-muted mt-2">
+	              Lorem ipsum dolor sit amet, nibh suavitate qualisque ut nam. Ad harhdfjgjgkd, ljflgfs. jkkkfdkljdfjdfjj. fejfjinnfe ljerhjf jlj re relreh reljj er lvljjrefvre ljjer vkrelhl kluhhb
+	            </div>
+         	</div>
+		</div>
+	</div>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+	
+		<!-- if user is not user -->
+	<div class="bg-white">
+	  <div class="container py-4">
+	    <div class="media col-md-10 col-lg-8 col-xl-7 p-0 my-4 mx-auto">
+	      <img src="https://api.adorable.io/avatars/120/jay@adorable.png" alt class="d-block ui-w-100 rounded-circle">
+	      <div class="media-body ml-5">
+	      	
+	      		<h4 style="display: inline;"class="font-weight-bold mb-4">John Doe</h4> 
+	      		<button type="button" class="btn btn-sm btn-success float-right" data-toggle="modal" data-target="#edit-profile-modal">{% if user.is_authenticated %} Edit Profile{% else%} Follow {%endif%}</button>	
+	      	
+	        
+	        <div class="text-muted mb-4">
+	          Lorem ipsum dolor sit amet, nibh suavitate qualisque ut nam. Ad harum primis electram duo, porro principes ei has.
+	        </div>
+	        <a href="#" class="d-inline-block text-dark">
+	          <strong>234</strong>
+	          <span class="text-muted">followers</span>
+	        </a>
+	        <a href="#" class="d-inline-block text-dark ml-3">
+	          <strong>111</strong>
+	          <span class="text-muted">following</span>
+	        </a>
+	      </div>
+	    </div>
+	  </div>
+	  <hr class="m-0">
+	  <ul class="nav nav-tabs tabs-alt justify-content-center">
+	    <li class="nav-item">
+	      <a class="nav-link py-4 active" href="#">Posts</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link py-4" href="#">Likes</a>
+	    </li>
+	  </ul>
+	</div>
+
+	<!-- Modal -->
+        <div class="modal fade" id="edit-profile-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <label> Bio</label>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="Describe yourself"></textarea>
+                    </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="edit_profile_btn"
+                class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+	   
+	   
+{% endblock %}

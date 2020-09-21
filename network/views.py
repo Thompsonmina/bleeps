@@ -10,6 +10,8 @@ from .models import User
 def index(request):
     return render(request, "network/index.html")
 
+def edit_profile(request):
+    return render(request, "network/edit_profile.html")
 
 def login_view(request):
     if request.method == "POST":
@@ -61,3 +63,9 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+def profile(request):
+    return render(request, "network/profile.html")
+
+def friends(request):
+    return render(request, "network/friends.html")

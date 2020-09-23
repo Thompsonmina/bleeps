@@ -10,6 +10,9 @@ from .models import User
 def index(request):
     return render(request, "network/index.html")
 
+def home(request):
+    return render(request, "network/index.html")
+
 def edit_profile(request):
     return render(request, "network/edit_profile.html")
 

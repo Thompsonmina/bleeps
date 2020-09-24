@@ -50,6 +50,19 @@ class ModelTests(TestCase):
 		self.assertEqual(self.ada.followers.count(), 3)
 		self.assertEqual(self.ada.following.count(), 0)
 
+	def test_user_likePost_method(self):
+		""" test that the like post method actually works as intended"""
+		self.hannah.likePost(self.post1)
+
+		self.assertEqual(self.hannah, Like.objects.get(post=self.post1, user=self.hannah).user)
+
+	def test_user_unlikePost_method(self):
+		""" test that the unlike post method actually works """
+		Like.objects.create(user=self.paul, post=self.post1)
+		self.paul.unlikePost(self.post1)
+
+		self.assertEqual(0, Like.objects.filter(user=self.paul, post=self.post1).count())
+
 	def test_like_object_created_successfully(self):
 		self.assertIsInstance(self.adalikedpost2, Like)
 
@@ -77,4 +90,5 @@ class ModelTests(TestCase):
 		self.post1.editPost("this is a totally new message not the same")
 		self.assertNotEqual(self.post1.content, og_post)
 	
+
 	# test like methods and possibly post model still needs tests?

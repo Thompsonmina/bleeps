@@ -13,6 +13,15 @@ def index(request):
 def home(request):
     return render(request, "network/index.html")
 
+def profile(request):
+    return render(request, "network/profile.html")
+
+def friends(request):
+    return render(request, "network/friends.html")
+
+def create_new_post(request):
+    pass
+
 def edit_profile(request):
     return render(request, "network/edit_profile.html")
 
@@ -67,8 +76,3 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-def profile(request):
-    return render(request, "network/profile.html")
-
-def friends(request):
-    return render(request, "network/friends.html")

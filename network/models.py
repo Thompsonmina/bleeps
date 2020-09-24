@@ -4,12 +4,12 @@ from django.db import models
 
 class User(AbstractUser):
 	bio = models.CharField(max_length=200, blank=True)
-	following = models.ManyToManyField("self", symmetrical=False, related_name="followers")
+	following = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="followers")
 	
-	def like(self, post):
+	def likePost(self, post):
 		Like.objects.create(user=self, post=post)
 
-	def unlike(self, post):
+	def unlikePost(self, post):
 		Like.objects.filter(post=post, user=self).delete()
 
 	def follow(self, *person):

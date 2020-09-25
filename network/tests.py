@@ -90,5 +90,36 @@ class ModelTests(TestCase):
 		self.post1.editPost("this is a totally new message not the same")
 		self.assertNotEqual(self.post1.content, og_post)
 	
+class ViewTests(TestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.user = User.objects.create_user(username="ada", password="mynameisada")
 
-	# test like methods and possibly post model still needs tests?
+	def test_create_post_route_post_succefully_created(self):
+		self.client.force_login(self.user)
+		data = {"content": "this is a message"}
+		response = self.client.post(reverse("create_post"), data=data)
+
+		self.assertEqual(1, Post.objects.count())
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_create_post_route_fails_when_post_is_invalid(self):
+		""" ensure that an error message is sent and a post is not created if the post fails its constraints"""
+		self.client.force_login(self.user)
+		content = "a word" * 300 # passes the 300 char limit
+		data = {"content": content}
+		response = self.client.post(reverse("create_post"), data=data)
+
+		self.assertEqual(0, Post.objects.count())
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_create_post_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+
+		content = "i am an anon user attempting to pass"
+		data = {"content": content}
+		response = self.client.post(reverse("create_post"), data=data)
+
+		self.assertRedirects(response, f"/login?next={reverse('create_post')}")

@@ -31,6 +31,9 @@ class Post(models.Model):
 	def totalLikes(self):
 		return self.likes.count()
 
+	def __str__(self):
+		return f"{self.author} posted"
+
 
 class Like(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
@@ -38,3 +41,6 @@ class Like(models.Model):
 
 	class Meta:
 		constraints = [models.UniqueConstraint(fields=["user", "post"], name="unique_likes_per_user")]
+
+	def __str__(self):
+		return f"{self.user} liked"

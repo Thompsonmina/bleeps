@@ -11,5 +11,6 @@ urlpatterns = [
     path("profile", views.profile, name="profile"),
     path("friends", views.friends, name="friends"),
     path("edit_profile", views.edit_profile, name="edit_profile"),
-    path("home", views.home, name="home")
+    path("home", views.home, name="home"),
+    path("create_post", views.create_post, name="create_post")
 ]

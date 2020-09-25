@@ -1,11 +1,15 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.forms import modelform_factory
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User
+from .models import User, Post, Like
 
+LOGIN_URL = "/login"
 
 def index(request):
     return render(request, "network/index.html")
@@ -19,8 +23,23 @@ def profile(request):
 def friends(request):
     return render(request, "network/friends.html")
 
-def create_new_post(request):
-    pass
+@login_required(login_url=LOGIN_URL)
+def create_post(request):
+    if request.method == "POST":
+        # create a model form for easy validation and saving of data
+        postform = modelform_factory(Post, fields=["content"]) # using a modelform for easy validation and saving
+        form = postform(request.POST)
+
+        try:
+            post = form.save(commit=False)
+            print("got here fam")
+            post.author = request.user
+            post.save()
+        except:
+            # send error message to client 
+             return JsonResponse({"success":False, "error":form.errors})
+
+        return JsonResponse({"success":True})
 
 def edit_profile(request):
     return render(request, "network/edit_profile.html")

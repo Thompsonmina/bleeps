@@ -32,7 +32,6 @@ def create_post(request):
 
         try:
             post = form.save(commit=False)
-            print("got here fam")
             post.author = request.user
             post.save()
         except:
@@ -40,6 +39,31 @@ def create_post(request):
              return JsonResponse({"success":False, "error":form.errors})
 
         return JsonResponse({"success":True})
+
+@login_required(login_url=LOGIN_URL)
+def edit_post(request, post_id):
+    if request.method == "POST":
+        try:
+            # ensure that the post exists
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({"success":False, "error":"post does not exist"})
+
+        content = request.POST["content"]
+
+        # modify the post
+        if post.author == request.user:
+            if 0 < len(content) <= 300:
+                post.content = content
+                post.edited = True
+                post.save()
+                return JsonResponse({"success":True})
+
+            return JsonResponse({"success":False, "error":"content size is not within constraints"})
+
+        else:
+            return JsonResponse({"success":False, "error":"user doesnt have access"}, status=405)
+
 
 def edit_profile(request):
     return render(request, "network/edit_profile.html")

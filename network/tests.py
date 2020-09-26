@@ -105,7 +105,7 @@ class ViewTests(TestCase):
 		self.assertJSONEqual(str(response.content, encoding="utf8"),
 				 {"success":True})
 
-	def test_create_post_route_fails_when_post_is_invalid(self):
+	def test_create_post_route_handles_invalid_post(self):
 		""" ensure that an error message is sent and a post is not created if the post fails its constraints"""
 		self.client.force_login(self.user)
 		content = "a word" * 300 # passes the 300 char limit
@@ -117,9 +117,62 @@ class ViewTests(TestCase):
 
 	def test_create_post_route_redirects_if_user_not_loggedIn(self):
 		""" make sure an anon user doesnt have access to route"""
-
 		content = "i am an anon user attempting to pass"
 		data = {"content": content}
 		response = self.client.post(reverse("create_post"), data=data)
 
 		self.assertRedirects(response, f"/login?next={reverse('create_post')}")
+
+	def test_edit_post_route_post_succefully_edited(self):
+		self.client.force_login(self.user)
+		""" ensure that a post has been updated with new content"""
+		post = Post.objects.create(author=self.user, content="i will be edited")
+		newcontent = "i come to replace"
+		data = {"content": newcontent}
+		response = self.client.post(reverse("edit_post", args=[post.id]), data=data)
+
+		# querying for the same post because the it should have been updated 
+		self.assertEqual(Post.objects.get(id=post.id).content, newcontent)
+		self.assertTrue(Post.objects.get(id=post.id).edited)
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_edit_post_route_handles_invalid_postID(self):
+		""" ensure that the route handles a invalid post id arg in the url"""
+		self.client.force_login(self.user)
+		response = self.client.post(reverse("edit_post", args=[1]), data={"content": "blah blah"})
+
+		# should fail because there isnt any post object at all
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+ 
+	def test_edit_post_route_handles_invalid_post_content(self):
+		self.client.force_login(self.user)
+		post = Post.objects.create(author=self.user, content="i will be edited")
+		newcontent = "i come to replace" * 300
+		data = {"content": newcontent}
+		response = self.client.post(reverse("edit_post", args=[post.id]), data=data)
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_edit_post_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		post = Post.objects.create(author=self.user, content="i will be edited")		
+		content = "i am an anon user attempting to pass"
+		data = {"content": content}
+		response = self.client.post(reverse("edit_post", args=[post.id]), data=data)
+
+		self.assertRedirects(response, f"/login?next={reverse('edit_post', args=[post.id])}")
+
+	def test_edit_post_route_unauthorized_User(self):
+		""" ensure that only the owner of a post can edit it"""
+		self.client.force_login(self.user)
+		another_user = User.objects.create_user(username="prince", password="password")
+		
+		post = Post.objects.create(author=another_user, content="i will be edited")		
+		data = {"content":"content"}
+		response = self.client.post(reverse("edit_post", args=[post.id]), data=data)
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+

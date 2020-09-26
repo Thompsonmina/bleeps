@@ -1,13 +1,15 @@
 <div class="media border border-top-0 px-3 pt-2 pb-0">
 	<a href=""><img src="https://api.adorable.io/avatars/48/jack@adorable.png" alt="John Doe" class="mr-3 mt-4 ml-2 rounded-circle"></a>
-	<div class="media-body pl-2">
+	<div class="media-body pl-2 post-body">
 		<span> <a href=""><h6 style="display: inline">John Doe </h6></a><small> . 1m</small></span>
 		<div class="bubble">
 			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
 	    	Morbi non neque vel ante porttitor egestas. Nulla ac varius ligula.</p>
 		</div><!-- bubble end -->
+		{% if user.is_authenticated %} <button class="edit_post" data-id="3"> edit</button>{%endif%}
 		<p class="float-right pr-5 pb-0" style="font-size: 1.18em;"><a href="#"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
 </svg></a> <small> 12k </small></p>
 	</div>
 </div>
+

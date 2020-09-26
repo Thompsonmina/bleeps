@@ -175,4 +175,18 @@ class ViewTests(TestCase):
 
 		self.assertIn("error", str(response.content, encoding="utf8"))
 
+	def test_show_all_posts_route_works_well(self):
+		""" ensure that the route does as advertised"""
 
+		# create some posts
+		Post.objects.create(author=self.user, content="post 1")		
+		Post.objects.create(author=self.user, content="post 2")		
+		Post.objects.create(author=self.user, content="post 3")		
+		Post.objects.create(author=self.user, content="post 4")		
+		Post.objects.create(author=self.user, content="post 5")		
+
+		response = self.client.get(reverse("show_all"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("posts", response.context)
+		self.assertTemplateUsed(response, template_name="network/display_chats.html")	

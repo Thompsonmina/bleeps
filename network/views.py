@@ -1,19 +1,26 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
 from django.forms import modelform_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from .models import User, Post, Like
 
 LOGIN_URL = "/login"
+PAGINATION_NUM = 10
 
-def index(request):
-    return render(request, "network/index.html")
+def show_all_posts(request):
+    posts = Post.objects.all().order_by("-timestamp")
+    paginator = Paginator(posts, PAGINATION_NUM)
 
+    page_number = request.GET.get("page")
+    posts = paginator.get_page(page_number)
+    return render(request, "network/display_chats.html", {"posts":posts})
+
+@login_required(login_url=LOGIN_URL)
 def home(request):
     return render(request, "network/index.html")
 

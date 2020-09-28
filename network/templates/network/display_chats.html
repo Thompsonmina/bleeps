@@ -1,7 +1,7 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-			<div class="pl-3 pt-3 first border"> <h4> Home</h4></div>
+			<div class="pl-3 pt-3 first border"> <h4> {% if isfeed %} My Feed {% else %} All Posts {% endif %}</h4></div>
             <div class="media border px-3 pt-3">
               <img src="https://api.adorable.io/avatars/64/{{ user }}@adorable.png" alt="{{ user }}" class="mr-3 ml-3" style="width:60px; border-radius: 50%;">
               <div class="media-body">
@@ -28,22 +28,6 @@
 
         {% include "network/_edit_post_modal.html" %}
 
-        
-         <!-- <span class="step-links">
-          {% if posts.has_previous %}
-              <a href="?page=1">&laquo; first</a>
-              <a href="?page={{ posts.previous_page_number }}">previous</a>
-          {% endif %}
-
-          <span class="current">
-              Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
-          </span>
-
-          {% if posts.has_next %}
-              <a href="?page={{ posts.next_page_number }}">next</a>
-              <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
-          {% endif %}
-      </span> -->
         <nav aria-label="Page navigation example">
           <ul class="pagination">
             {% if posts.has_previous %}

@@ -13,16 +13,32 @@ LOGIN_URL = "/login"
 PAGINATION_NUM = 10
 
 def show_all_posts(request):
+    """ get all the posts and display """
     posts = Post.objects.all().order_by("-timestamp")
-    paginator = Paginator(posts, PAGINATION_NUM)
 
+    paginator = Paginator(posts, PAGINATION_NUM)
     page_number = request.GET.get("page")
     posts = paginator.get_page(page_number)
-    return render(request, "network/display_chats.html", {"posts":posts})
+    return render(request, "network/display_chats.html", {"posts":posts, "isfeed":False})
 
 @login_required(login_url=LOGIN_URL)
-def home(request):
-    return render(request, "network/index.html")
+def feed(request):
+    """ display only the posts of the people that a user is following"""
+    # use preftch to efficienly get all the related data in 3 queries at once 
+    user = User.objects.prefetch_related("followers__posts").get(id=request.user.id)
+    follows = user.following.all()
+
+    # if the user has people he/she is following
+    if follows:
+        # combine all the querysets and order in reverse chronological order and paginate
+        posts = follows[0].posts.all().union(*[user.posts.all() for user in follows[1:]]).order_by("-timestamp")
+        paginator = Paginator(posts, PAGINATION_NUM)
+        page_number = request.GET.get("page")
+        posts = paginator.get_page(page_number)
+    else:
+        posts = []
+
+    return render(request, "network/display_chats.html", {"posts":posts, "isfeed":True})
 
 def profile(request):
     return render(request, "network/profile.html")
@@ -74,6 +90,24 @@ def edit_post(request, post_id):
 
 def edit_profile(request):
     return render(request, "network/edit_profile.html")
+
+@login_required(login_url=LOGIN_URL)
+def follow(request):
+    if request.method == "POST":
+        # check if its a valid user
+        try:
+            try:
+                int(request.POST["otheruser_id"])
+            except:
+                return JsonResponse({"success":False, "error":"data passed is not the appropiate type"})
+            otheruser = User.objects.get(id=request.POST["otheruser_id"])
+        except User.DoesNotExist:
+            return JsonResponse({"success":False, "error":"no such user exists"})
+
+        # start following person if not already following person
+        if not request.user.isFollowing(otheruser.id):
+            request.user.follow(otheruser)
+        return JsonResponse({"success":True})
 
 def login_view(request):
     if request.method == "POST":

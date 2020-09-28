@@ -18,6 +18,15 @@ class User(AbstractUser):
 	def unfollow(self, *person):
 		self.following.remove(*person)
 
+	def isFollowing(self, person_id):
+		""" return true if user follows the person"""
+		try:
+			self.following.get(pk=person_id)
+		except User.DoesNotExist:
+			return False
+		return True
+
+
 class Post(models.Model):
 	author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
 	content = models.CharField(max_length=300)

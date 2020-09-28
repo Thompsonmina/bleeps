@@ -25,7 +25,7 @@ class ModelTests(TestCase):
 		self.assertIsInstance(self.ada, User)
 		self.assertEqual("ada", User.objects.get(id=1).username)
 
-	def test_user_follow(self):
+	def test_user_follow_method(self):
 		""" test that the follow method works as expected """
 		self.ada.follow(self.paul, self.hannah, self.obinna)
 		following = self.ada.following.all()
@@ -33,7 +33,7 @@ class ModelTests(TestCase):
 		self.assertEqual(3, len(following))
 		self.assertIn(self.paul, following)
 
-	def test_user_unfollow(self):
+	def test_user_unfollow_method(self):
 		""" test that the unfollow method works as expected"""
 		self.ada.follow(self.paul, self.hannah)
 		self.ada.unfollow(self.paul)
@@ -41,7 +41,7 @@ class ModelTests(TestCase):
 		self.assertNotIn(self.paul, self.ada.following.all())
 
 	def test_user_followers(self):
-		"""  test that the many to many relationship is indeed assymetrical on the model
+		"""  test that the many to many relationship is indeed asymmetrical on the model
 		i.e following relationship is completely one sided"""
 		self.hannah.follow(self.ada)
 		self.obinna.follow(self.ada)
@@ -49,6 +49,16 @@ class ModelTests(TestCase):
 
 		self.assertEqual(self.ada.followers.count(), 3)
 		self.assertEqual(self.ada.following.count(), 0)
+
+	def test_user_isFollowing_method(self):
+		""" test that the isfollowing return true if following and false if not"""
+		self.ada.follow(self.hannah)
+		self.ada.follow(self.obinna)
+
+		self.assertTrue(self.ada.isFollowing(self.hannah.id))
+		self.assertTrue(self.ada.isFollowing(self.obinna.id))
+
+		self.assertFalse(self.ada.isFollowing(self.paul.id))
 
 	def test_user_likePost_method(self):
 		""" test that the like post method actually works as intended"""
@@ -181,12 +191,75 @@ class ViewTests(TestCase):
 		# create some posts
 		Post.objects.create(author=self.user, content="post 1")		
 		Post.objects.create(author=self.user, content="post 2")		
-		Post.objects.create(author=self.user, content="post 3")		
-		Post.objects.create(author=self.user, content="post 4")		
-		Post.objects.create(author=self.user, content="post 5")		
 
 		response = self.client.get(reverse("show_all"))
 
 		self.assertEqual(response.status_code, 200)
 		self.assertIn("posts", response.context)
 		self.assertTemplateUsed(response, template_name="network/display_chats.html")	
+
+	def test_feeds_route_works_well(self):
+		""" ensure that the route only shows the posts of the users follwoing"""
+		self.client.force_login(self.user)
+		friend1 = User.objects.create_user(username="prince", password="password")
+		friend2 = User.objects.create_user(username="damian", password="password")
+		friend3 = User.objects.create_user(username="queen", password="password")
+		
+		self.user.follow(friend1, friend2, friend3)
+
+		# create some posts
+		Post.objects.create(author=friend3, content="post 1")		
+		Post.objects.create(author=friend2, content="post 2")		
+		Post.objects.create(author=friend1, content="post 2")		
+
+		response = self.client.get(reverse("feed"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(all([post.author in [friend1, friend2, friend3] for post in response.context["posts"]]))
+		self.assertTemplateUsed(response, template_name="network/display_chats.html")	
+
+	def test_feeds_route_context_returns_empty_List_if_not_following(self):
+		""" ensure that no post are displayed if the user is not folllowing any one"""
+		self.client.force_login(self.user)
+		another_user = User.objects.create_user(username="prince", password="password")
+
+		# create some posts
+		Post.objects.create(author=another_user, content="post 1")		
+		Post.objects.create(author=self.user, content="post 2")		
+
+		response = self.client.get(reverse("feed"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(0, len(response.context["posts"]))
+		self.assertTemplateUsed(response, template_name="network/display_chats.html")	
+
+	def test_feed_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		response = self.client.get(reverse("feed"))
+		self.assertRedirects(response, f"/login?next={reverse('feed')}")
+
+	def test_follow_route_works_as_expected(self):
+		self.client.force_login(self.user)
+		another_user = User.objects.create_user(username="prince", password="password")
+
+		response = self.client.post(reverse("follow"), data={"otheruser_id":another_user.id})
+
+		self.assertTrue(self.user.isFollowing(another_user.id))
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_follow_route_handles_invalid_arguements(self):
+		""" ensure that the route works can hanle wrong arguements"""
+		self.client.force_login(self.user)
+		response = self.client.post(reverse("follow"), data={"otheruser_id":
+			"passing a string instead of a number"})
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+
+	def test_follow_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		response = self.client.post(reverse("follow"), data={"otheruser_id":3})
+		self.assertRedirects(response, f"/login?next={reverse('follow')}")
+
+	def test_unfollow_route_works_as_expected(self)

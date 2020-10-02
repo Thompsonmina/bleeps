@@ -6,22 +6,33 @@
 	<div class="bg-white">
 	  <div class="container py-4">
 	    <div class="media col-md-10 col-lg-8 col-xl-7 p-0 my-4 mx-auto">
-	      <img src="https://api.adorable.io/avatars/120/jay@adorable.png" alt class="d-block ui-w-100 rounded-circle">
+	      <img src="https://api.adorable.io/avatars/120/{{selected_user.username}}@adorable.png" alt class="d-block ui-w-100 rounded-circle">
 	      <div class="media-body ml-5">
 	      	
-	      		<h4 style="display: inline;"class="font-weight-bold mb-4">John Doe</h4> 
-	      		<button type="button" class="btn btn-sm btn-success float-right" data-toggle="modal" data-target="#edit-profile-modal">{% if user.is_authenticated %} Edit Profile{% else%} Follow {%endif%}</button>	
-	      	
+	      		<h4 style="display: inline;"class="font-weight-bold mb-4">{{ selected_user.username}}</h4> 
+	      		{% if user.is_authenticated and user == selected_user %}
+		      			<button type="button" class="btn btn-sm btn-success float-right edit_profile" data-name="{{ user.username }}">Edit Profile</button>	
+		      		{% else %}
+
+		      			{% if selected_user in user.following.all %}
+			      			<button type="button" class="btn btn-sm btn-success float-right follow-status" data-action="unfollow" data-id="{{ selected_user.id }}"> Unfollow
+		      				</button>
+		      			{% else %}
+		      				<button type="button" class="btn btn-sm btn-success float-right follow-status" data-id="{{ selected_user.id}}" data-action="follow"> 
+		      				Follow
+		      				</button>
+		      			{% endif %}		
+	      		{% endif %}
 	        
-	        <div class="text-muted mb-4">
-	          Lorem ipsum dolor sit amet, nibh suavitate qualisque ut nam. Ad harum primis electram duo, porro principes ei has.
+	        <div class="text-muted mb-4 current-bio">
+	        {{ selected_user.bio }}
 	        </div>
-	        <a href="#" class="d-inline-block text-dark">
-	          <strong>234</strong>
+	        <a href="{% url 'show_followers' username=selected_user.username %}" class="d-inline-block text-dark">
+	          <strong>{{ selected_user.followers.count }}</strong>
 	          <span class="text-muted">followers</span>
 	        </a>
-	        <a href="#" class="d-inline-block text-dark ml-3">
-	          <strong>111</strong>
+	        <a href="{% url 'show_following' username=selected_user.username %}" class="d-inline-block text-dark ml-3">
+	          <strong>{{ selected_user.following.count }}</strong>
 	          <span class="text-muted">following</span>
 	        </a>
 	      </div>
@@ -38,6 +49,13 @@
 	  </ul>
 	</div>
 
+        {% for post in posts %}
+	        {% include "network/_post.html" %}
+	      {% empty %}
+          nothing here
+        {% endfor %}  
+        {% include "network/_edit_post_modal.html" %}
+
 	<!-- Modal -->
         <div class="modal fade" id="edit-profile-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -48,24 +66,54 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div class="modal-body">
-                <form action="{% url 'login' %}" method="post">
+               <form id="edit-profile-modal-form" method="post">
+             	 <div class="modal-body">
                     {% csrf_token %}
                     <label> Bio</label>
                     <div class="form-group">
-                        <textarea class="form-control" placeholder="Describe yourself"></textarea>
+                        <textarea class="form-control" id="edit-profile-modal-textbox" placeholder="Describe yourself (200 words)"></textarea>
                     </div>
+                </div>
+              	<div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	                <button type="submit" id="edit_profile_btn"
+	                class="btn btn-primary">Save changes</button>
+              	</div>
                 </form>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="edit_profile_btn"
-                class="btn btn-primary">Save changes</button>
-              </div>
             </div>
           </div>
         </div>
 
+    <!--         pagination -->
+        <nav aria-label="Page navigation example">
+          <ul class="pagination">
+            {% if posts.has_previous %}
+            <li class="page-item">
+              <a class="page-link" aria-label="First" href="?page=1">
+                First
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ posts.previous_page_number }}" aria-label="Previous">
+                Prev
+              </a>
+            </li>
+            {% endif %}
+
+           {% if posts.has_next %}
+            <li class="page-item">
+              <a class="page-link" aria-label="Next" href="?page={{ posts.next_page_number }}">
+               Next
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" aria-label="Last" href="?page={{ posts.paginator.num_pages }}">
+                Last
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
 	   
 	   
 {% endblock %}

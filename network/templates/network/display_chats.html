@@ -2,6 +2,7 @@
 
 {% block body %}
 			<div class="pl-3 pt-3 first border"> <h4> {% if isfeed %} My Feed {% else %} All Posts {% endif %}</h4></div>
+        {% if user.is_authenticated %}
             <div class="media border px-3 pt-3">
               <img src="https://api.adorable.io/avatars/64/{{ user }}@adorable.png" alt="{{ user }}" class="mr-3 ml-3" style="width:60px; border-radius: 50%;">
               <div class="media-body">
@@ -16,10 +17,10 @@
                 </form>
               </div>
             </div>
-    	
 	    
 	    	<hr class="m-0 border">
-	    
+	       {% endif %}
+
         {% for post in posts %}
 	        {% include "network/_post.html" %}
 	      {% empty %}
@@ -28,6 +29,7 @@
 
         {% include "network/_edit_post_modal.html" %}
 
+<!--         pagination -->
         <nav aria-label="Page navigation example">
           <ul class="pagination">
             {% if posts.has_previous %}

@@ -8,12 +8,12 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form  method="post" id=edit-post>
+              <form  method="post" id=edit-post-modal-form>
               <div class="modal-body">
                     {% csrf_token %}
                    
                     <div class="form-group">
-                        <textarea class="form-control" id="edit-textbox" ></textarea>
+                        <textarea class="form-control" id="edit-post-modal-textbox" ></textarea>
                     </div>
               </div>
               <div class="modal-footer">

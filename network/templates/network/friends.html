@@ -2,38 +2,72 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-			<!-- if user is not user -->
-	<div class=" text-center"> <h3 class="pt-1 mb-0">jaya</h3></div>    
+			
+	<div class=" text-center"> <h3 class="pt-1 mb-0">{{ selected_user.username }}</h3></div>    
   	<ul class="nav nav-tabs tabs-alt justify-content-center mt-0 pt-0">
     	<li class="nav-item pt-0">
-      		<a class="nav-link pt-4 pb-4 active pt-0" href="#">Followers</a>
+      		<a class="nav-link pt-4 pb-4 {% if followers %} active {% endif %} pt-0" href="{% url 'show_followers' username=selected_user.username %}">Followers</a>
     	</li>
     	<li class="nav-item">
-      		<a class="nav-link py-4" href="#">Following</a>
+      		<a class="nav-link py-4 {% if following %} active {% endif %}" href="{% url 'show_following' username=selected_user.username %}">Following</a>
     	</li>
   	</ul>    
 
 	<div class="list-group px-4 py-3">
 <!-- 		add conditional statement for empty profile padding -->
+	{% if following %}
+	{% for person in following %}
 		<div class="media px-3 pb-1  border">
-          	<img src="https://api.adorable.io/avatars/32/jay@adorable.png" alt class="rounded-circle ml-2 mt-2">	
+          	<img src="https://api.adorable.io/avatars/32/{{ person.username }}@adorable.png" alt class="rounded-circle ml-2 mt-2">	
 			<div class="media-body ml-2 mt-2">
-          		<h5 style="display: inline;"class="font-weight-bold mb-4">John Doe</h5> <button type="button" class="btn btn-sm btn-success float-right">Follow</button>	
+          		<a href="{% url 'profile' username=person.username  %}">
+          			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 
+          		</a>
+	
+<!--           		because you cant follow or unfollow yourself silly -->          				{% if person != user and user.is_authenticated%} 
+	      			{% if person in user.following.all %}
+		      			<button type="button" class="btn btn-sm btn-success float-right follow-status" data-action="unfollow" data-id="{{ person.id }}"> Unfollow
+	      				</button>
+	      			{% else %}
+	      				<button type="button" class="btn btn-sm btn-success float-right follow-status" data-id="{{ person.id}}" data-action="follow"> 
+	      				Follow
+	      				</button>
+	      			{% endif %}		
+	      		{% endif %}
 	           	<div class="text-muted mt-2">
-	              this is a line of text
+	            {{ person.bio }}
 	            </div>
          	</div>
 		</div>
+	{% endfor %}
+	{% endif %}
 
-		<div class="media px-3 pb-1 border border-top-0">
-		    <img src="https://api.adorable.io/avatars/32/jay@adorable.png" alt class="rounded-circle ml-2 mt-2">
+	{% if followers %}
+	{% for person in followers %}
+		<div class="media px-3 pb-1  border">
+          	<img src="https://api.adorable.io/avatars/32/{{ person.username }}@adorable.png" alt class="rounded-circle ml-2 mt-2">	
 			<div class="media-body ml-2 mt-2">
-          		<h5 style="display: inline;"class="font-weight-bold mb-4">John Doe</h5> <button type="button" class="btn btn-sm btn-success float-right">Follow</button>	
+          		<a href="{% url 'profile' username=person.username  %}">
+          			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 
+          		</a>
+	
+<!--           		because you cant follow or unfollow yourself silly -->          				{% if person != user %}
+	      			{% if person in user.following.all %}
+		      			<button type="button" class="btn btn-sm btn-success float-right follow-status" data-action="unfollow" data-id="{{ person.id }}"> Unfollow
+	      				</button>
+	      			{% else %}
+	      				<button type="button" class="btn btn-sm btn-success float-right follow-status" data-id="{{ person.id}}" data-action="follow"> 
+	      				Follow
+	      				</button>
+	      			{% endif %}		
+	      		{% endif %}
 	           	<div class="text-muted mt-2">
-	              Lorem ipsum dolor sit amet, nibh suavitate qualisque ut nam. Ad harhdfjgjgkd, ljflgfs. jkkkfdkljdfjdfjj. fejfjinnfe ljerhjf jlj re relreh reljj er lvljjrefvre ljjer vkrelhl kluhhb
+	            {{ person.bio }}
 	            </div>
          	</div>
 		</div>
+	{% endfor %}
+	{% endif %}
 	</div>
 
 {% endblock %}

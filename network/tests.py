@@ -155,7 +155,6 @@ class ViewTests(TestCase):
 		# should fail because there isnt any post object at all
 		self.assertIn("error", str(response.content, encoding="utf8"))
 
- 
 	def test_edit_post_route_handles_invalid_post_content(self):
 		self.client.force_login(self.user)
 		post = Post.objects.create(author=self.user, content="i will be edited")
@@ -238,6 +237,73 @@ class ViewTests(TestCase):
 		response = self.client.get(reverse("feed"))
 		self.assertRedirects(response, f"/login?next={reverse('feed')}")
 
+	def test_profile_route_works_as_expected(self):
+		""" ensure that the profile route works correctly """
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("profile", args=[self.user.username]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(self.user, response.context["selected_user"])
+		self.assertTrue(all([post.author == self.user for post in response.context["posts"]]))
+		self.assertTemplateUsed(response, template_name="network/profile.html")	
+
+	def test_profile_route_handles_invalid_url_argument(self):
+		""" ensure that we get an error if a wrong username is put in the url"""
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("profile", args=["wrong thing"]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("error", response.context)
+		self.assertTemplateUsed(response, template_name="network/errors.html")
+
+	def test_edit_profile_route_bio_succefully_edited(self):
+		self.client.force_login(self.user)
+		""" ensure that a user's bio has been updated with new content"""
+		newbio = "living life"
+		data = {"bio": newbio}
+		response = self.client.post(reverse("edit_profile", args=[self.user.username]), data=data)
+
+		# querying for the user because the it should have been updated 
+		self.assertEqual(User.objects.get(username=self.user.username).bio, newbio)
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_edit_profile_route_handles_invalid_username(self):
+		""" ensure that the route handles a invalid post id arg in the url"""
+		self.client.force_login(self.user)
+		response = self.client.post(reverse("edit_profile", args=["random name"]), data={"content": "blah blah"})
+
+		# should fail because there isnt any user with that name at all
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_edit_profile_route_handles_invalid_post_content(self):
+		self.client.force_login(self.user)
+		
+		newbio = "living life" * 100
+		data = {"bio": newbio}
+		response = self.client.post(reverse("edit_profile", args=[self.user.username]), data=data)
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_edit_profile_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		newbio = "living life"
+		data = {"bio": newbio}
+		response = self.client.post(reverse("edit_profile", args=[self.user.username]), data=data)
+
+		self.assertRedirects(response, f"/login?next={reverse('edit_profile', args=[self.user.username])}")
+
+	def test_edit_profile_route_unauthorized_User(self):
+		""" ensure that only the user can edit it"""
+		self.client.force_login(self.user)
+		another_user = User.objects.create_user(username="prince", password="password")
+		
+		newbio = "living life"
+		data = {"bio": newbio}		
+		response = self.client.post(reverse("edit_profile", args=[another_user.username]), data=data)
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
 	def test_follow_route_works_as_expected(self):
 		self.client.force_login(self.user)
 		another_user = User.objects.create_user(username="prince", password="password")
@@ -256,10 +322,77 @@ class ViewTests(TestCase):
 
 		self.assertIn("error", str(response.content, encoding="utf8"))
 
-
 	def test_follow_route_redirects_if_user_not_loggedIn(self):
 		""" make sure an anon user doesnt have access to route"""
 		response = self.client.post(reverse("follow"), data={"otheruser_id":3})
 		self.assertRedirects(response, f"/login?next={reverse('follow')}")
 
-	def test_unfollow_route_works_as_expected(self)
+	def test_unfollow_route_works_as_expected(self):
+		self.client.force_login(self.user)
+		another_user = User.objects.create_user(username="prince", password="password")
+		self.user.follow(another_user)
+
+		response = self.client.post(reverse("unfollow"), data={"otheruser_id":another_user.id})
+		self.assertFalse(self.user.isFollowing(another_user.id))
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_unfollow_route_handles_invalid_arguements(self):
+		""" ensure that the route works can hanle wrong arguements"""
+		self.client.force_login(self.user)
+		response = self.client.post(reverse("unfollow"), data={"otheruser_id":
+			"passing a string instead of a number"})
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_unfollow_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		response = self.client.post(reverse("unfollow"), data={"otheruser_id":3})
+		self.assertRedirects(response, f"/login?next={reverse('unfollow')}")
+
+	def test_show_following_route_works_as_expected(self):
+		self.client.force_login(self.user)
+		friend1 = User.objects.create_user(username="prince", password="password")
+		friend2 = User.objects.create_user(username="damian", password="password")
+		friend3 = User.objects.create_user(username="queen", password="password")
+		self.user.follow(friend3, friend2, friend1)
+
+		response = self.client.get(reverse("show_following", args=[self.user.username]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(self.user, response.context["selected_user"])
+		self.assertTrue(all([self.user.isFollowing(person.id) for person in response.context["following"]]))
+		self.assertTemplateUsed(response, template_name="network/friends.html")	
+
+	def test_show_following_route_invalid_url_argument(self):
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("show_following", args=["wrong thing"]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("error", response.context)
+		self.assertTemplateUsed(response, template_name="network/errors.html")
+
+	def test_show_followers_route_works_as_expected(self):
+		self.client.force_login(self.user)
+		friend1 = User.objects.create_user(username="prince", password="password")
+		friend2 = User.objects.create_user(username="damian", password="password")
+		friend1.follow(self.user)
+		friend2.follow(self.user)
+
+		response = self.client.get(reverse("show_followers", args=[self.user.username]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(self.user, response.context["selected_user"])
+		self.assertTrue(all([person.isFollowing(self.user.id) for person in response.context["followers"]]))
+		self.assertTemplateUsed(response, template_name="network/friends.html")	
+
+
+	def test_show_followers_route_invalid_url_argument(self):
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("show_followers", args=["wrong thing"]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("error", response.context)
+		self.assertTemplateUsed(response, template_name="network/errors.html")
+
+	

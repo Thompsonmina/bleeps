@@ -48,7 +48,7 @@
                         <a class="nav-link" href="{% url 'feed' %}">Feed</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                        <a class="nav-link" href="{% url 'profile' username=user.username %}">Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

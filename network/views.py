@@ -40,8 +40,21 @@ def feed(request):
 
     return render(request, "network/display_chats.html", {"posts":posts, "isfeed":True})
 
-def profile(request):
-    return render(request, "network/profile.html")
+def profile(request, username):
+    try:
+        user = User.objects.prefetch_related("posts").get(username=username)
+    except User.DoesNotExist:
+        return render(request, "network/errors.html", {"error": "invalid username"})
+    
+    posts = user.posts.all().order_by("-timestamp")
+    paginator = Paginator(posts, PAGINATION_NUM)
+    page_number = request.GET.get("page")
+    posts = paginator.get_page(page_number)
+
+    return render(request, "network/profile.html", {"selected_user": user,
+                    "posts":posts})
+
+# def profile_likes(request, username):
 
 def friends(request):
     return render(request, "network/friends.html")
@@ -87,8 +100,25 @@ def edit_post(request, post_id):
         else:
             return JsonResponse({"success":False, "error":"user doesnt have access"}, status=405)
 
+@login_required(login_url=LOGIN_URL)
+def edit_profile(request, username):
+    if request.method == "POST":
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return JsonResponse({"success":False, "error": "user does not exist "})
 
-def edit_profile(request):
+    newbio = request.POST["bio"]
+
+    if user == request.user:
+        if 0 < len(newbio) <= 200:
+            user.bio = newbio
+            user.save()
+            return JsonResponse({"success":True})
+        return JsonResponse({"success":False, "error": "bio size is not within range"})
+    else:
+        return JsonResponse({"success":False, "error":"user does not have access"})
+
     return render(request, "network/edit_profile.html")
 
 @login_required(login_url=LOGIN_URL)
@@ -109,6 +139,44 @@ def follow(request):
             request.user.follow(otheruser)
         return JsonResponse({"success":True})
 
+@login_required(login_url=LOGIN_URL)
+def unfollow(request):
+    if request.method == "POST":
+        # check if its a valid user
+        try:
+            try:
+                int(request.POST["otheruser_id"])
+            except:
+                return JsonResponse({"success":False, "error":"data passed is not the appropiate type"})
+            otheruser = User.objects.get(id=request.POST["otheruser_id"])
+        except User.DoesNotExist:
+            return JsonResponse({"success":False, "error":"no such user exists"})
+
+        # start following person if not already following person
+        if request.user.isFollowing(otheruser.id):
+            request.user.unfollow(otheruser)
+        return JsonResponse({"success":True})
+
+def show_following(request, username):
+    try:
+        user = User.objects.prefetch_related("following").get(username=username)
+    except User.DoesNotExist:
+        return render(request, "network/errors.html", {"error": "invalid username"})
+
+    following = user.following.all()
+    return render(request, "network/friends.html", {"selected_user": user,
+                    "following":following})
+
+def show_followers(request, username):
+    try:
+        user = User.objects.prefetch_related("following").get(username=username)
+    except User.DoesNotExist:
+        return render(request, "network/errors.html", {"error": "invalid username"})
+
+    followers = user.followers.all()
+    return render(request, "network/friends.html", {"selected_user": user,
+                    "followers":followers})
+
 def login_view(request):
     if request.method == "POST":
 
@@ -120,7 +188,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("show_all"))
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
@@ -131,13 +199,18 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("show_all"))
 
 
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
+
+        # ensure that usernames cannot have spaces in between
+        if " " in  username:
+            return render(request, "network/register.html", {
+                "message": "whitespace not allowed in usernames"})
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -156,7 +229,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("show_all"))
     else:
         return render(request, "network/register.html")
 

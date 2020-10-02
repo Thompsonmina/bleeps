@@ -23,7 +23,6 @@ class ModelTests(TestCase):
 	def test_user_object_created_successfully(self):
 		""" test that a user instannce was created well in the db"""
 		self.assertIsInstance(self.ada, User)
-		self.assertEqual("ada", User.objects.get(id=1).username)
 
 	def test_user_follow_method(self):
 		""" test that the follow method works as expected """
@@ -468,4 +467,65 @@ class ViewTests(TestCase):
 		response = self.client.post(reverse("unlike_post"), data={"post_id":3})
 		self.assertRedirects(response, f"/login?next={reverse('unlike_post')}")
 
-		
+	
+class AuthViewsTests(TestCase):
+	
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.USERNAME, cls.PASSWORD = "Jacob", "ishallSTRivetoCreateaninsecurepassword12-"
+		cls.user = User.objects.create_user(username=cls.USERNAME, password=cls.PASSWORD)
+
+	# login route
+	def test_login_route_on_GET(self):
+		response = self.client.get(reverse("login"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTemplateUsed(response, template_name="network/login.html")
+
+	def test_login_route_user_login_successful(self):
+		""" test that a user has successfully been logged in"""
+		data = {"username":self.USERNAME, "password":self.PASSWORD}
+		response = self.client.post(reverse("login"), data=data, follow=True)
+
+		self.assertRedirects(response, reverse("show_all"))
+
+	def test_login_route_user_login_failed(self):
+		""" test for if a user is not authenticated """
+		data = {"username":"randousername", "password":"randopassword"}
+		response = self.client.post(reverse("login"), data=data)
+
+		self.assertEqual(response.status_code, 200)
+
+		# ensure that a status message was passed along on login failure
+		self.assertIsNotNone(response.context["message"])
+
+	# register route tests	
+	def test_register_route_on_GET(self):
+		""" test default log in page"""
+		response = self.client.get(reverse("register"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTemplateUsed(response, template_name="network/register.html")
+
+	def test_register_route_user_created_successfully(self):
+		""" test to ensure that a user was created successfuly"""
+		newuser, newuserpassword = "James", "password_hehe"
+		data = {"username":newuser, "password":newuserpassword, 
+					"email":f"{newuser}@test.com", "confirmation":newuserpassword}
+		response = self.client.post(reverse("register"), data=data, follow=True)
+
+		# check if there are 2 users in the db, the user and setup and the new user created
+		self.assertEqual(2, len(User.objects.all()))
+		self.assertRedirects(response, reverse("show_all"))
+
+	def test_register_route_user_creation_failed(self):
+		""" test for when a user creation fails"""
+
+		# putting in a duplicate user to ensure failure
+		data = {"username":self.USERNAME, "password":"bleh", "email":"blabla@mail.com",
+					 "confirmation":"bleh"}
+		response = self.client.post(reverse("register"), data=data)
+
+		self.assertEqual(200, response.status_code)
+		self.assertIsNotNone(response.context["message"])

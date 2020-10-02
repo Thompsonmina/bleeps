@@ -13,6 +13,14 @@ class User(AbstractUser):
 	def unlikePost(self, post):
 		Like.objects.filter(post=post, user=self).delete()
 
+	def haslikedPost(self, post):
+		""" return true if user has already liked post"""
+		try:
+			self.likes.get(user=self, post=post)
+		except Like.DoesNotExist:
+			return False
+		return True
+
 	def follow(self, *person):
 		self.following.add(*person)
 

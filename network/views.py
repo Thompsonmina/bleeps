@@ -128,7 +128,7 @@ def follow(request):
         try:
             try:
                 int(request.POST["otheruser_id"])
-            except:
+            except ValueError:
                 return JsonResponse({"success":False, "error":"data passed is not the appropiate type"})
             otheruser = User.objects.get(id=request.POST["otheruser_id"])
         except User.DoesNotExist:
@@ -176,6 +176,29 @@ def show_followers(request, username):
     followers = user.followers.all()
     return render(request, "network/friends.html", {"selected_user": user,
                     "followers":followers})
+
+@login_required(login_url=LOGIN_URL)
+def like_post(request):
+    if request.method == "POST":
+        # ensure that we can cast the id given
+        try:
+            post_id = int(request.POST["post_id"])
+        except ValueError:
+            return JsonResponse({"success": False, "error":"data passed is not the appropiate type"})
+
+        # check if the id belongs to a valid post
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({"success": False, "error": "post does not exist"})
+
+        # like if the user hasnt already liked the post
+        if not request.user.haslikedPost(post):
+            request.user.likePost(post)
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "error": "user has liked post already"})
+
 
 def login_view(request):
     if request.method == "POST":

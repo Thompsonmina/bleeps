@@ -73,6 +73,16 @@ class ModelTests(TestCase):
 
 		self.assertEqual(0, Like.objects.filter(user=self.paul, post=self.post1).count())
 
+	def test_user_haslikedPost_method(self):
+		""" test that the method can correctly tell if a user has liked a post"""
+		self.ada.likePost(self.post1)
+		# post to was liked by ada in the setup method
+		self.ada.unlikePost(self.post2)
+
+		self.assertTrue(self.ada.haslikedPost(self.post1))
+		self.assertFalse(self.ada.haslikedPost(self.post2))
+
+
 	def test_like_object_created_successfully(self):
 		self.assertIsInstance(self.adalikedpost2, Like)
 
@@ -395,4 +405,45 @@ class ViewTests(TestCase):
 		self.assertIn("error", response.context)
 		self.assertTemplateUsed(response, template_name="network/errors.html")
 
-	
+	def test_like_route_works_as_expected(self):
+		""" 
+		ensure that the route actually creates a like object that is linked to its 
+		post and user and returns a satisfactory response
+		"""
+		self.client.force_login(self.user)
+		likedpost = Post.objects.create(author=self.user, content="stuff")
+
+		data = {"post_id": likedpost.id}
+		response = self.client.post(reverse("like_post"), data=data)
+
+		self.assertIn(Like.objects.get(user=self.user, post=likedpost), likedpost.likes.all())
+		self.assertIn(Like.objects.get(user=self.user, post=likedpost), self.user.likes.all())
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_like_route_like_will_not_be_created_with_invalid_posts(self):
+		"""
+		ensure that if the route recieves a post id for a post that does not exist
+		a like will not be created 
+		"""
+		self.client.force_login(self.user)
+
+		# a non-existent post
+		data = {"post_id": 10000}
+		response = self.client.post(reverse("like_post"), data=data)
+
+		self.assertEqual(0, Like.objects.count())
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_like_route_invalid_arguement_handled(self):
+		self.client.force_login(self.user)
+		response = self.client.post(reverse("like_post"), data={"post_id":
+			"passing a string instead of a number"})
+
+		self.assertIn("error", str(response.content, encoding="utf8"))
+
+	def test_like_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		response = self.client.post(reverse("like_post"), data={"post_id":3})
+		self.assertRedirects(response, f"/login?next={reverse('like_post')}")
+		 

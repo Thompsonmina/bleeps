@@ -199,6 +199,19 @@ def like_post(request):
         else:
             return JsonResponse({"success": False, "error": "user has liked post already"})
 
+@login_required(login_url=LOGIN_URL)
+def unlike_post(request):
+    if request.method == "POST":
+        # ensure that we can cast the id given
+        try:
+            post_id = int(request.POST["post_id"])
+            post = Post.objects.get(id=post_id)
+        except:
+            return JsonResponse({"success": False, "error":"something is wrong with the data sent"})
+
+        if request.user.haslikedPost(post):
+            request.user.unlikePost(post)
+            return JsonResponse({"success": True})
 
 def login_view(request):
     if request.method == "POST":

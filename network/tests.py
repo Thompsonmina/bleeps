@@ -447,3 +447,25 @@ class ViewTests(TestCase):
 		response = self.client.post(reverse("like_post"), data={"post_id":3})
 		self.assertRedirects(response, f"/login?next={reverse('like_post')}")
 		 
+	def test_unlike_route_works_as_expected(self):
+		""" 
+		ensure that the route actually deletes the like object that is linked to its 
+		post and user and returns a satisfactory response
+		"""
+		self.client.force_login(self.user)
+		tobeunlikedpost = Post.objects.create(author=self.user, content="stuff")
+		self.user.likePost(tobeunlikedpost)
+
+		data = {"post_id": tobeunlikedpost.id}
+		response = self.client.post(reverse("unlike_post"), data=data)
+
+		self.assertEqual(0, Like.objects.count())
+		self.assertJSONEqual(str(response.content, encoding="utf8"),
+				 {"success":True})
+
+	def test_unlike_route_redirects_if_user_not_loggedIn(self):
+		""" make sure an anon user doesnt have access to route"""
+		response = self.client.post(reverse("unlike_post"), data={"post_id":3})
+		self.assertRedirects(response, f"/login?next={reverse('unlike_post')}")
+
+		

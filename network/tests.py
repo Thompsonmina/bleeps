@@ -251,15 +251,56 @@ class ViewTests(TestCase):
 		self.client.force_login(self.user)
 		response = self.client.get(reverse("profile", args=[self.user.username]))
 
+		another_user = User.objects.create_user(username="gerald", password="password")
+
+		post1 = Post.objects.create(author=self.user, content="post 1")		
+		post2 = Post.objects.create(author=self.user, content="post 2")		
+		post3 = Post.objects.create(author=another_user, content="post 1")	
+
+		# check that each post is only the post that belongs to the current user
+		self.assertTrue(all([post.author == self.user for post in response.context["posts"]]))
+
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(self.user, response.context["selected_user"])
-		self.assertTrue(all([post.author == self.user for post in response.context["posts"]]))
 		self.assertTemplateUsed(response, template_name="network/profile.html")	
 
 	def test_profile_route_handles_invalid_url_argument(self):
 		""" ensure that we get an error if a wrong username is put in the url"""
 		self.client.force_login(self.user)
 		response = self.client.get(reverse("profile", args=["wrong thing"]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIn("error", response.context)
+		self.assertTemplateUsed(response, template_name="network/errors.html")
+
+	def test_profile_likes_route_works_as_expected(self):
+		""" ensure that the profile_likes  route works correctly """
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("profile_likes", args=[self.user.username]))
+
+		# create some posts 
+		post1 = Post.objects.create(author=self.user, content="post 1")		
+		post2 = Post.objects.create(author=self.user, content="post 2")		
+		post3 = Post.objects.create(author=self.user, content="post 1")		
+
+		# like some posts
+		self.user.likePost(post1)
+		self.user.likePost(post2)
+
+		likedposts = [like.post for like in self.user.likes.all()]
+		
+		# check that all the posts sent are only the posts liked by the user
+		self.assertTrue(all([post in likedposts for post in response.context["posts"]]))
+
+		# other tests to ensure the page rendered well
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(self.user, response.context["selected_user"])
+		self.assertTemplateUsed(response, template_name="network/profile.html")	
+
+	def test_profile_likes_route_handles_invalid_url_argument(self):
+		""" ensure that we get an error if a wrong username is put in the url"""
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("profile_likes", args=["wrong thing"]))
 
 		self.assertEqual(response.status_code, 200)
 		self.assertIn("error", response.context)

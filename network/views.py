@@ -1,9 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import IntegrityError
+from django.db.models import Prefetch
 from django.forms import modelform_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
@@ -31,6 +32,8 @@ def feed(request):
     # if the user has people he/she is following
     if follows:
         # combine all the querysets and order in reverse chronological order and paginate
+        # add all the other followers post querysets to the first followers post queryset
+        #in order to get one big queryset that we can order 
         posts = follows[0].posts.all().union(*[user.posts.all() for user in follows[1:]]).order_by("-timestamp")
         paginator = Paginator(posts, PAGINATION_NUM)
         page_number = request.GET.get("page")
@@ -54,9 +57,24 @@ def profile(request, username):
     return render(request, "network/profile.html", {"selected_user": user,
                     "posts":posts})
 
- def profile_likes(request, username):
-        user = User.objects.prefetch_related("likes__posts")
+def profile_likes(request, username):
+    try:
+        user =  User.objects.prefetch_related(
+                    Prefetch("likes",
+                queryset=Like.objects.select_related("post"))).get(username=username)
+    except User.DoesNotExist:
+        return render(request, "network/errors.html", {"error": "invalid username"})
 
+    likes = user.likes.all()
+    posts = [like.post for like in likes]
+    posts = sorted(posts, key=lambda p: p.timestamp, reverse=True)
+    
+    paginator = Paginator(posts, PAGINATION_NUM)
+    page_number = request.GET.get("page")
+    posts = paginator.get_page(page_number)
+
+    return render(request, "network/profile.html", {"selected_user": user,
+                    "posts":posts, "islike":True})
 
 @login_required(login_url=LOGIN_URL)
 def create_post(request):

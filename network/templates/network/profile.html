@@ -41,10 +41,10 @@
 	  <hr class="m-0">
 	  <ul class="nav nav-tabs tabs-alt justify-content-center">
 	    <li class="nav-item">
-	      <a class="nav-link py-4 active" href="#">Posts</a>
+	      <a class="nav-link py-4 {% if not islike %} active {% endif %}" href="{% url 'profile' username=user.username %}">Posts</a>
 	    </li>
 	    <li class="nav-item">
-	      <a class="nav-link py-4" href="#">Likes</a>
+	      <a class="nav-link py-4 {% if islike %} active {% endif %}" href="{% url 'profile_likes' username=user.username %}">Likes</a>
 	    </li>
 	  </ul>
 	</div>

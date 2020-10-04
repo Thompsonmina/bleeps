@@ -54,10 +54,9 @@ def profile(request, username):
     return render(request, "network/profile.html", {"selected_user": user,
                     "posts":posts})
 
-# def profile_likes(request, username):
+ def profile_likes(request, username):
+        user = User.objects.prefetch_related("likes__posts")
 
-def friends(request):
-    return render(request, "network/friends.html")
 
 @login_required(login_url=LOGIN_URL)
 def create_post(request):
@@ -212,6 +211,8 @@ def unlike_post(request):
         if request.user.haslikedPost(post):
             request.user.unlikePost(post)
             return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False})
 
 def login_view(request):
     if request.method == "POST":

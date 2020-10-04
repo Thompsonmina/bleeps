@@ -55,6 +55,36 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	document.querySelectorAll(".likebtn").forEach(btn =>{
+
+		btn.onclick = () => {
+			let likecount = btn.parentElement.querySelector(".likes-count")
+			if (btn.dataset.action === "liked"){
+				btn.dataset.action = "unliked";
+				sendFormDataOnPost("/unlike", {post_id: btn.dataset.id})
+				.then(data => {
+					if(data.success) {
+						btn.classList.remove("fas")
+						btn.classList.add("far")
+						likecount.innerText = parseInt(likecount.innerText) - 1
+					}
+				});
+			}
+			else{
+				btn.dataset.action = "liked";
+				sendFormDataOnPost("/like", {post_id: btn.dataset.id})
+				.then(data => {
+					if (data.success){
+						btn.classList.remove("far")
+						btn.classList.add("fas")
+						likecount.innerText = parseInt(likecount.innerText) + 1
+					}
+				});
+				
+			}
+		};
+	});
+
 // work in progress
 	const editProfileButton = document.querySelector(".edit_profile")
 	if (editProfileButton){

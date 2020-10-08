@@ -23,41 +23,11 @@
 
         {% for post in posts %}
 	        {% include "network/_post.html" %}
-	      {% empty %}
-          nothing here
-        {% endfor %}  
+	     {% empty %}
+          <p class="d-flex justify-content-center align-items-center">Nothing here follow more people to see thier bleeps</p>
+        {% endfor %}   
+
+        {% include "network/_pagination.html" %}
 
         {% include "network/_edit_post_modal.html" %}
-
-<!--         pagination -->
-        <nav aria-label="Page navigation example">
-          <ul class="pagination">
-            {% if posts.has_previous %}
-            <li class="page-item">
-              <a class="page-link" aria-label="First" href="?page=1">
-                First
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?page={{ posts.previous_page_number }}" aria-label="Previous">
-                Prev
-              </a>
-            </li>
-            {% endif %}
-
-           {% if posts.has_next %}
-            <li class="page-item">
-              <a class="page-link" aria-label="Next" href="?page={{ posts.next_page_number }}">
-               Next
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" aria-label="Last" href="?page={{ posts.paginator.num_pages }}">
-                Last
-              </a>
-            </li>
-            {% endif %}
-          </ul>
-        </nav>
-
 {% endblock %}

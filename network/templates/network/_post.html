@@ -1,12 +1,14 @@
 <div class="media border border-top-0 px-3 pt-2 pb-0">
 	<a href=""><img src="https://api.adorable.io/avatars/48/{{ post.author }}@adorable.png" alt="{{post.author}}" class="mr-3 mt-4 ml-2 rounded-circle"></a>
 	<div class="media-body pl-2 post-body">
-		<span> <a href="{% url 'profile' username=post.author  %}"><h6 style="display: inline"> {{ post.author }} </h6></a><small> {{ post.timestamp }}</small></span>
+		<span> <a href="{% url 'profile' username=post.author  %}"><h6 style="display: inline"> {{ post.author }} </h6></a></span>
 		<div class="bubble">
 			<p class="profile-text"> {{ post.content }}</p>
 		</div><!-- bubble end -->
-		{% if user == post.author %} <button class="edit_post btn btn-primary btn-sm" data-id="{{ post.id }}"> edit post</button>{% endif %}
-		<p class="float-right pr-5 pb-0" style="font-size: 1.18em;"><i class=" likebtn far fa-heart" data-id="{{ post.id }}" data-action="unliked"></i> <small class="likes-count"> {{ post.likes.count }} </small></p>
+		<small> {{ post.timestamp }}</small>
+		{% if user == post.author %} <button class="edit_post" data-id="{{ post.id }}"> edit post</button>{% endif %}
+
+		<p class="float-right pr-5 pb-0" style="font-size: 1.18em; color: #fd3a4a;"><i class=" likebtn fas fa-heart" data-id="{{ post.id }}" data-action="unliked"></i> <small style="color: black; "class="likes-count"> {{ post.likes.count }} </small></p>
 	</div>
 </div>
 

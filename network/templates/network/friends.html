@@ -14,7 +14,6 @@
   	</ul>    
 
 	<div class="list-group px-4 py-3">
-<!-- 		add conditional statement for empty profile padding -->
 	{% if following %}
 	{% for person in following %}
 		<div class="media px-3 pb-1  border">
@@ -39,6 +38,7 @@
 	            </div>
          	</div>
 		</div>
+
 	{% endfor %}
 	{% endif %}
 
@@ -50,8 +50,8 @@
           		<a href="{% url 'profile' username=person.username  %}">
           			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 
           		</a>
-	
-<!--           		because you cant follow or unfollow yourself silly -->          				{% if person != user %}
+<!--           		because you cant follow or unfollow yourself silly -->          				
+				{% if person != user %}
 	      			{% if person in user.following.all %}
 		      			<button type="button" class="btn btn-sm btn-success float-right follow-status" data-action="unfollow" data-id="{{ person.id }}"> Unfollow
 	      				</button>
@@ -60,7 +60,7 @@
 	      				Follow
 	      				</button>
 	      			{% endif %}		
-	      		{% endif %}
+      			{% endif %}
 	           	<div class="text-muted mt-2">
 	            {{ person.bio }}
 	            </div>

@@ -48,6 +48,17 @@
   width: 400px;
   padding: 50px;
 }
+
+.edit_post {
+  border: none;
+  background-color: inherit;
+  color: green;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+
 .header-container{
     margin-top:20px;    
 }

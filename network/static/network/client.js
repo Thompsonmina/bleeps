@@ -1,9 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+	// assign correct data attributes to the likes on each post depending whether a user has liked it
+	setPostsLikeStatus()
 
-	getPostLikesStatus()
+	// configuring the action when a user likes a post
 	document.querySelectorAll(".likebtn").forEach(btn =>{
 
+		// send the action to the server and update the dom
 		btn.onclick = () => {
 			let likecount = btn.parentElement.querySelector(".likes-count")
 			if (btn.dataset.action === "liked"){
@@ -32,7 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	});
 
-	// asynchronously create a post for the user
+
+
+	//if we are on a page where we can make a post then asynchronously create a post for the user
 	if (document.querySelector("#create-post")){
 		document.querySelector("#create-post").onsubmit = function(){
 		const content = document.querySelector("#content").value;
@@ -46,9 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (!data.success){
 					alert("post not sent, something went wrong")
 				}
-				else{
+				else {
 				 		console.log(data.error)
-				 	}
+				 }
 			})
 		}
 		return false;
@@ -56,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 	
 
+	// configure the edit post buttons
 	document.querySelectorAll(".edit_post").forEach(btn =>{
 		btn.onclick = () => {
 			const currentp = btn.parentElement.querySelector(".profile-text");
@@ -65,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			$("#edit-post-modal").modal("show");
 			textbox.value = formertext;
 
+			// send the new data to the server and update the dom
 			document.querySelector("#edit-post-modal-form").onsubmit = function() {
 				content = textbox.value
 				if (content.length >= 1)
@@ -87,36 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	document.querySelectorAll(".likebtn").forEach(btn =>{
-
-		btn.onclick = () => {
-			let likecount = btn.parentElement.querySelector(".likes-count")
-			if (btn.dataset.action === "liked"){
-				btn.dataset.action = "unliked";
-				sendFormDataOnPost("/unlike", {post_id: btn.dataset.id})
-				.then(data => {
-					if(data.success) {
-						btn.classList.remove("fas")
-						btn.classList.add("far")
-						likecount.innerText = parseInt(likecount.innerText) - 1
-					}
-				});
-			}
-			else{
-				btn.dataset.action = "liked";
-				sendFormDataOnPost("/like", {post_id: btn.dataset.id})
-				.then(data => {
-					if (data.success){
-						btn.classList.remove("far")
-						btn.classList.add("fas")
-						likecount.innerText = parseInt(likecount.innerText) + 1
-					}
-				});
-				
-			}
-		};
-	});
-
+	// configure the edit profile button 
 	const editProfileButton = document.querySelector(".edit_profile")
 	if (editProfileButton){
 		editProfileButton.onclick = () => {
@@ -148,9 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 	
-	
+	// configure the follow and and unfollow buttons
 	document.querySelectorAll(".follow-status").forEach(btn =>{
-		
+		// use their attributes to know which action to send to the server
 		btn.onclick = () => {
 			if (btn.dataset.action === "follow"){
 			
@@ -186,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function sendFormDataOnPost(route, data)
 {
+	/* a kind of wrapper helper function to deal with the headache of sending ajax post request on django*/
 	const csrftoken = Cookies.get("csrftoken");
 	const request = new Request(route, {headers:{"X-CSRFToken": csrftoken}});
 
@@ -204,16 +183,22 @@ async function sendFormDataOnPost(route, data)
 }
 
 
-function getPostLikesStatus()
-{
+function setPostsLikeStatus() {
+	/* get the like status of each post from the server and modify the dom
+	to show either an empty heart or a filled heart and to set the correct data 
+	attributes */
+
 	const likebuttons = document.querySelectorAll(".likebtn");
+	// parse the postids into a array to be sent for processing
 	let post_ids = Array.from(likebuttons, item => item.dataset.id);
 
-	post_ids = post_ids.join(",");
+	post_ids = post_ids.join(","); 
 
 	fetch(`/has_liked_posts?posts=${post_ids}`, {method: "GET"})
 	.then(response => response.json())
 	.then(data => {
+			// on successful retrieval of the like status, iterate through each post's like button and 
+			// assign the correct attributes
 			if (data.success){
 				likebuttons.forEach(btn =>{
 
@@ -226,15 +211,12 @@ function getPostLikesStatus()
 						btn.dataset.action = "unliked";
 						btn.classList.add("far")
 						btn.classList.remove("fas")
-
 					}
 				})
 			}
-			
 			else{
 				console.log(data.error);
 			}
 		})
-	console.log("redf")
 
 }

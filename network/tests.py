@@ -78,9 +78,8 @@ class ModelTests(TestCase):
 		# post to was liked by ada in the setup method
 		self.ada.unlikePost(self.post2)
 
-		self.assertTrue(self.ada.haslikedPost(self.post1))
-		self.assertFalse(self.ada.haslikedPost(self.post2))
-
+		self.assertTrue(self.ada.haslikedPost(self.post1.id))
+		self.assertFalse(self.ada.haslikedPost(self.post2.id))
 
 	def test_like_object_created_successfully(self):
 		self.assertIsInstance(self.adalikedpost2, Like)

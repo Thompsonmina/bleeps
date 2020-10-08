@@ -13,13 +13,21 @@ class User(AbstractUser):
 	def unlikePost(self, post):
 		Like.objects.filter(post=post, user=self).delete()
 
-	def haslikedPost(self, post):
+	def haslikedPost(self, post_id):
 		""" return true if user has already liked post"""
 		try:
-			self.likes.get(user=self, post=post)
+			self.likes.get(user=self, post=post_id)
 		except Like.DoesNotExist:
 			return False
 		return True
+
+	def haslikedPosts(self, listOfPost_ids):
+		""" returns a dict of the ids with thier liked status as keys"""
+		status = {}
+		for post_id in listOfPost_ids:
+			status[post_id] = self.haslikedPost(post_id)
+
+		return status
 
 	def follow(self, *person):
 		self.following.add(*person)
@@ -62,4 +70,4 @@ class Like(models.Model):
 			name="unique_likes_per_user")]
 
 	def __str__(self):
-		return f"{self.user} liked"
+		return f"{self.user} liked {self.post.id} post"

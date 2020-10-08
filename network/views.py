@@ -210,7 +210,7 @@ def like_post(request):
             return JsonResponse({"success": False, "error": "post does not exist"})
 
         # like if the user hasnt already liked the post
-        if not request.user.haslikedPost(post):
+        if not request.user.haslikedPost(post.id):
             request.user.likePost(post)
             return JsonResponse({"success": True})
         else:
@@ -226,11 +226,37 @@ def unlike_post(request):
         except:
             return JsonResponse({"success": False, "error":"something is wrong with the data sent"})
 
-        if request.user.haslikedPost(post):
+        if request.user.haslikedPost(post.id):
             request.user.unlikePost(post)
             return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False})
+
+@login_required(login_url=LOGIN_URL)
+def has_liked_posts(request):
+    """ 
+    takes a list of post ids and returns a list boolean values 
+    indicating if the post has been liked by a user of their like status
+    """
+
+    listofpost_ids = request.GET.get("posts")
+    if listofpost_ids:
+        listofpost_ids = listofpost_ids.rsplit(",")
+    else:
+        return JsonResponse({"success":False, "error":" no arguemnents sent"})
+
+    try:
+        listofpost_ids = [int(post_id) for post_id in set(listofpost_ids)]
+    except:
+        return JsonResponse({"success": False, "error":"something is wrong with the data sent"})
+    
+    post_objects = Post.objects.in_bulk(listofpost_ids)
+    if len(post_objects) == len(listofpost_ids):
+        likestatusdict = request.user.haslikedPosts(listofpost_ids)
+        return JsonResponse({"success":True, "status":likestatusdict})
+    else:
+        return JsonResponse({"success":False, "error":"an id may be wrong"})
+
 
 def login_view(request):
     if request.method == "POST":

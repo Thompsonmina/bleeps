@@ -1,5 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+
+	getPostLikesStatus()
+	document.querySelectorAll(".likebtn").forEach(btn =>{
+
+		btn.onclick = () => {
+			let likecount = btn.parentElement.querySelector(".likes-count")
+			if (btn.dataset.action === "liked"){
+				btn.dataset.action = "unliked";
+				sendFormDataOnPost("/unlike", {post_id: btn.dataset.id})
+				.then(data => {
+					if(data.success) {
+						btn.classList.remove("fas")
+						btn.classList.add("far")
+						likecount.innerText = parseInt(likecount.innerText) - 1
+					}
+				});
+			}
+			else{
+				btn.dataset.action = "liked";
+				sendFormDataOnPost("/like", {post_id: btn.dataset.id})
+				.then(data => {
+					if (data.success){
+						btn.classList.remove("far")
+						btn.classList.add("fas")
+						likecount.innerText = parseInt(likecount.innerText) + 1
+					}
+				});
+				
+			}
+		};
+	});
+
 	// asynchronously create a post for the user
 	if (document.querySelector("#create-post")){
 		document.querySelector("#create-post").onsubmit = function(){
@@ -85,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	});
 
-// work in progress
 	const editProfileButton = document.querySelector(".edit_profile")
 	if (editProfileButton){
 		editProfileButton.onclick = () => {
@@ -170,4 +201,40 @@ async function sendFormDataOnPost(route, data)
 	})
     return await response.json();
    
+}
+
+
+function getPostLikesStatus()
+{
+	const likebuttons = document.querySelectorAll(".likebtn");
+	let post_ids = Array.from(likebuttons, item => item.dataset.id);
+
+	post_ids = post_ids.join(",");
+
+	fetch(`/has_liked_posts?posts=${post_ids}`, {method: "GET"})
+	.then(response => response.json())
+	.then(data => {
+			if (data.success){
+				likebuttons.forEach(btn =>{
+
+					if (data.status[btn.dataset.id]){
+						btn.dataset.action = "liked";
+						btn.classList.add("fas")
+						btn.classList.remove("far")
+					}
+					else {
+						btn.dataset.action = "unliked";
+						btn.classList.add("far")
+						btn.classList.remove("fas")
+
+					}
+				})
+			}
+			
+			else{
+				console.log(data.error);
+			}
+		})
+	console.log("redf")
+
 }

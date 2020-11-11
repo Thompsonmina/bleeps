@@ -29,13 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						btn.classList.add("fas")
 						likecount.innerText = parseInt(likecount.innerText) + 1
 					}
-				});
-				
+				});				
 			}
 		};
 	});
-
-
 
 	//if we are on a page where we can make a post then asynchronously create a post for the user
 	if (document.querySelector("#create-post")){
@@ -194,7 +191,7 @@ function setPostsLikeStatus() {
 
 	post_ids = post_ids.join(","); 
 
-	fetch(`/has_liked_posts?posts=${post_ids}`, {method: "GET"})
+	fetch(`/has_liked_posts?posts=${post_ids}`, {method: "GET", redirect: "error"})
 	.then(response => response.json())
 	.then(data => {
 			// on successful retrieval of the like status, iterate through each post's like button and 

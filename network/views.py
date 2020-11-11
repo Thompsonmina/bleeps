@@ -272,7 +272,6 @@ def has_liked_posts(request):
     else:
         return JsonResponse({"success":False, "error":"an id may be wrong"})
 
-
 def login_view(request):
     if request.method == "POST":
 

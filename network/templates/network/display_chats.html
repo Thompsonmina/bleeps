@@ -1,33 +1,31 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-			<div class="pl-3 pt-3 first border"> <h4> {% if isfeed %} My Feed {% else %} All Posts {% endif %}</h4></div>
-        {% if user.is_authenticated %}
-            <div class="media border px-3 pt-3">
-              <img src="https://api.adorable.io/avatars/64/{{ user }}@adorable.png" alt="{{ user }}" class="mr-3 ml-3" style="width:60px; border-radius: 50%;">
-              <div class="media-body">
-                <form id="create-post" method="post">
-                    {% csrf_token %}
-                  <div class="form-group">
-                    <textarea class="form-control" id="content" name="content" placeholder="Bleep something"></textarea>
-                  </div>
-                  <div class="text-right pb-2">
-                  	<button type="submit" class="btn btn-primary">Submit</button>
-                  </div>
-                </form>
+	<div class="pl-3 pt-3 first border"> <h4> {% if isfeed %} My Feed {% else %} All Posts {% endif %}</h4></div>
+    {% if user.is_authenticated %}
+        <div class="media border px-3 pt-3">
+          <img src="https://avatars.dicebear.com/api/bottts/{{ user.username}}.svg?h=64" alt="{{ user.username }}" class="mr-3 ml-3" style="width:60px; border-radius: 50%;">
+          <div class="media-body">
+            <form id="create-post" method="post">
+                {% csrf_token %}
+              <div class="form-group">
+                <textarea class="form-control" id="content" name="content" placeholder="Bleep something"></textarea>
               </div>
-            </div>
-	    
-	    	<hr class="m-0 border">
-	       {% endif %}
+              <div class="text-right pb-2">
+              	<button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+  
+  	 <hr class="m-0 border">
+     {% endif %}
 
-        {% for post in posts %}
-	        {% include "network/_post.html" %}
-	     {% empty %}
-          <p class="d-flex justify-content-center align-items-center">Nothing here follow more people to see thier bleeps</p>
-        {% endfor %}   
-
-        {% include "network/_pagination.html" %}
-
-        {% include "network/_edit_post_modal.html" %}
+  {% for post in posts %}
+    {% include "network/_post.html" %}
+  {% empty %}
+    <p class="d-flex justify-content-center align-items-center">Nothing here follow more people to see thier bleeps</p>
+  {% endfor %}   
+  {% include "network/_pagination.html" %}
+  {% include "network/_edit_post_modal.html" %}
 {% endblock %}

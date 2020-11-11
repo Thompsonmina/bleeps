@@ -248,13 +248,14 @@ class ViewTests(TestCase):
 	def test_profile_route_works_as_expected(self):
 		""" ensure that the profile route works correctly """
 		self.client.force_login(self.user)
-		response = self.client.get(reverse("profile", args=[self.user.username]))
 
 		another_user = User.objects.create_user(username="gerald", password="password")
 
 		post1 = Post.objects.create(author=self.user, content="post 1")		
 		post2 = Post.objects.create(author=self.user, content="post 2")		
 		post3 = Post.objects.create(author=another_user, content="post 1")	
+		
+		response = self.client.get(reverse("profile", kwargs={'username':self.user.username}))
 
 		# check that each post is only the post that belongs to the current user
 		self.assertTrue(all([post.author == self.user for post in response.context["posts"]]))
@@ -272,10 +273,22 @@ class ViewTests(TestCase):
 		self.assertIn("error", response.context)
 		self.assertTemplateUsed(response, template_name="network/errors.html")
 
+	def test_profile_route_works_for_guest_users(self):
+
+		post1 = Post.objects.create(author=self.user, content="post 1")		
+		post2 = Post.objects.create(author=self.user, content="post 2")		
+		post3 = Post.objects.create(author=self.user, content="post 1")	
+		
+		response = self.client.get(reverse("profile", kwargs={'username':self.user.username}))
+
+		# check that each post is only the post that belongs to the current user
+		self.assertEqual(response.status_code, 200)
+		self.assertTemplateUsed(response, template_name="network/profile.html")	
+
+
 	def test_profile_likes_route_works_as_expected(self):
 		""" ensure that the profile_likes  route works correctly """
 		self.client.force_login(self.user)
-		response = self.client.get(reverse("profile_likes", args=[self.user.username]))
 
 		# create some posts 
 		post1 = Post.objects.create(author=self.user, content="post 1")		
@@ -288,6 +301,8 @@ class ViewTests(TestCase):
 
 		likedposts = [like.post for like in self.user.likes.all()]
 		
+		response = self.client.get(reverse("profile_likes", args=[self.user.username]))
+
 		# check that all the posts sent are only the posts liked by the user
 		self.assertTrue(all([post in likedposts for post in response.context["posts"]]))
 
@@ -506,6 +521,9 @@ class ViewTests(TestCase):
 		""" make sure an anon user doesnt have access to route"""
 		response = self.client.post(reverse("unlike_post"), data={"post_id":3})
 		self.assertRedirects(response, f"/login?next={reverse('unlike_post')}")
+
+	def test_has_liked_posts_route_works_as_expected(self):
+		pass
 
 	
 class AuthViewsTests(TestCase):

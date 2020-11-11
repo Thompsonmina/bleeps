@@ -1,20 +1,17 @@
 <!--         pagination -->
-  <nav aria-label="Page navigation example">
-    <ul class="pagination justify-content-end pb-0">
-      {% if posts.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ posts.previous_page_number }}" aria-label="Previous">
-          Prev
-        </a>
-      </li>
-      {% endif %}
+<div>
+  {% if posts.has_previous %}
+    <a class="float-left pl-5" href="?page={{ posts.previous_page_number }}" aria-label="Previous">
+      Previous Posts
+    </a>
+  </li>
+  {% endif %}
 
-     {% if posts.has_next %}
-      <li class="page-item pb-0 mb-0 float-right">
-        <a class="page-link" aria-label="Next" href="?page={{ posts.next_page_number }}">
-         Next
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </nav>
+  {% if posts.has_next %}
+    <a class="float-right pr-5" aria-label="Next" href="?page={{ posts.next_page_number }}">
+     More Posts
+    </a>
+  {% endif %}
+</div>
+      
+

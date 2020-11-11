@@ -23,7 +23,8 @@
           			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 
           		</a>
 	
-<!--           		because you cant follow or unfollow yourself silly -->          				{% if person != user and user.is_authenticated%} 
+<!--           		because you cant follow or unfollow yourself silly -->          				
+				{% if person != user and user.is_authenticated%} 
 	      			{% if person in user.following.all %}
 		      			<button type="button" class="btn btn-sm btn-success float-right follow-status" data-action="unfollow" data-id="{{ person.id }}"> Unfollow
 	      				</button>

@@ -26,7 +26,7 @@ SECRET_KEY = config("SECRET_KEY", default='bgv@sw^mtg=v554by#xig9&cxhpg(x!_1vl+m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default='FALSE', cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'bleeps.herokuapp.com']
 
 
 # Application definition

@@ -17,7 +17,7 @@
 	{% if following %}
 	{% for person in following %}
 		<div class="media px-3 pb-1  border">
-          	<img src="https://api.adorable.io/avatars/32/{{ person.username }}@adorable.png" alt class="rounded-circle ml-2 mt-2">	
+          	<img src="https://avatars.dicebear.com/api/bottts/{{ person.username}}.svg?h=32" class="ml-2 mt-2 rounded-circle">	
 			<div class="media-body ml-2 mt-2">
           		<a href="{% url 'profile' username=person.username  %}">
           			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 
@@ -46,7 +46,7 @@
 	{% if followers %}
 	{% for person in followers %}
 		<div class="media px-3 pb-1  border">
-          	<img src="https://api.adorable.io/avatars/32/{{ person.username }}@adorable.png" alt class="rounded-circle ml-2 mt-2">	
+          	<img src="https://avatars.dicebear.com/api/bottts/{{ person.username}}.svg?h=32" class="ml-2 mt-2 rounded-circle">	
 			<div class="media-body ml-2 mt-2">
           		<a href="{% url 'profile' username=person.username  %}">
           			<h5 style="display: inline;"class="font-weight-bold mb-4">{{person.username}}</h5> 

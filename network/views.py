@@ -11,7 +11,7 @@ from django.urls import reverse
 from .models import User, Post, Like
 
 LOGIN_URL = "/login"
-PAGINATION_NUM = 10
+PAGINATION_NUM = 19
 
 def show_all_posts(request):
     """ get all the posts and display """

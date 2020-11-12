@@ -1,6 +1,6 @@
 # bleeps
-## a twitter like social media app created with django
+## a twitter like social media app created with django and bootstrap
 
-Create posts and follow your favorite people on bleeps. 
-check it out [bleeps](http://bleeps.herokuapp.com/)
+Create, edit and like posts and follow your favorite people on bleeps. 
+check it [out](http://bleeps.herokuapp.com/)
 

@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				 }
 			})
 		}
+		window.location.reload();
 		return false;
 		};
 	}
@@ -179,7 +180,6 @@ async function sendFormDataOnPost(route, data)
    
 }
 
-
 function setPostsLikeStatus() {
 	/* get the like status of each post from the server and modify the dom
 	to show either an empty heart or a filled heart and to set the correct data 
@@ -215,5 +215,4 @@ function setPostsLikeStatus() {
 				console.log(data.error);
 			}
 		})
-
 }

@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config("SECRET_KEY", default='bgv@sw^mtg=v554by#xig9&cxhpg(x!_1vl+ms1ws3p)943e')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default='TRUE', cast=bool)
+DEBUG = config("DEBUG", default='False', cast=bool)
 
 ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'bleeps.herokuapp.com']
 
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = config("SITE_ID", default=3, cast=int)
+SITE_ID = config("SITE_ID", default=4, cast=int)
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_EMAIL_REQUIRED = True

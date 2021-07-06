@@ -151,4 +151,4 @@ STATIC_URL = '/static/'
 import dj_database_url
 DATABASES["default"] = dj_database_url.config(
     default=config("DATABASE_URL", default="postgres://postgres:postgres@localhost/network"),
-    conn_max_age=600))
+    conn_max_age=600)

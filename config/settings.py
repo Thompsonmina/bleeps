@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'project4.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -152,3 +152,6 @@ import dj_database_url
 DATABASES["default"] = dj_database_url.config(
     default=config("DATABASE_URL", default="postgres://postgres:postgres@localhost/network"),
     conn_max_age=600)
+
+
+
